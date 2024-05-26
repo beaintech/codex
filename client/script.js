@@ -1,4 +1,4 @@
-import bot from  './assets/bot.svg';
+import bot from './assets/bot.svg';
 import user from './assets/user.svg';
 
 const form = document.querySelector('form');
@@ -7,32 +7,49 @@ const chatContainer = document.querySelector('#chat_container');
 let loadInterval;
 
 const loader = (element) => {
-element.textContent = ''
+    element.textContent = '';
 
+    loadInterval = setInterval(() => {
+        element.textContent += '.';
 
-loadInterval = setInterval(() => {
-    // Update the text content of the loading indicator
-    element.textContent += '.';
-
-    // If the loading indicator has reached three dots, reset it
-    if (element.textContent === '....') {
-        element.textContent = '';
-    }
-}, 300);
+        if (element.textContent === '....') {
+            element.textContent = '';
+        }
+    }, 300);
 }
 
-const typeText = (element, text) => {
+const typeText = (element, text, isBot = false) => {
     let index = 0;
-    let interval = setInterval(() => {
-     if(index < text.length) {
-         element.innerHTML += text.charAt(index);
-         index++; 
-     } else {
-         clearInterval(interval);
-     }
+    const interval = setInterval(() => {
+        if (index < text.length) {
+            element.innerHTML += text.charAt(index);
+            index++;
+        } else {
+            clearInterval(interval);
+            if (isBot) {
+                // Add a booking link if the response contains a hotel recommendation
+                const hotelName = extractHotelName(text); // Define this function based on your use case
+                if (hotelName) {
+                    const bookingLink = generateAffiliateLink(hotelName);
+                    element.innerHTML += `<br><a href="${bookingLink}" target="_blank">Book Now</a>`;
+                }
+            }
+        }
     }, 20);
- }
+}
 
+const generateAffiliateLink = (hotelName) => {
+    const affiliateId = 'your_affiliate_id'; // Replace with your actual affiliate ID
+    const baseUrl = 'https://www.booking.com/hotel/';
+    return `${baseUrl}${hotelName}.html?aid=${affiliateId}`;
+}
+
+// Define this function based on your specific use case
+const extractHotelName = (text) => {
+    // Simple regex to match a hotel name - customize this as needed
+    const match = text.match(/hotel\s([^\s]+)/i);
+    return match ? match[1] : null;
+}
 
 const generateUniqueId = () => {
     const timestamp = Date.now();
@@ -42,12 +59,10 @@ const generateUniqueId = () => {
     return `id-${timestamp}-${hexadecimalString}`;
 }
 
-
 const chatStripe = (isAi, value, uniqueId) => {
-    console.log(value, 'client value');
     return (
         `
-        <div class="wrapper ${isAi && 'ai'}">
+        <div class="wrapper ${isAi ? 'ai' : ''}">
             <div class="chat">
                 <div class="profile">
                     <img 
@@ -65,63 +80,44 @@ const chatStripe = (isAi, value, uniqueId) => {
 const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(form);
-    const promptText = data.get('prompt'); // correctly retrieve the 'prompt' field from FormData
-    console.log('data.get prompt in script js--', promptText);
- 
-    // users' chat stripes
+    const promptText = data.get('prompt');
+
     chatContainer.innerHTML += chatStripe(false, promptText);
- 
     form.reset();
- 
-    // at bot stripe
+
     const uniqueId = generateUniqueId();
     chatContainer.innerHTML += chatStripe(true, ' ', uniqueId);
- 
-     // to focus scroll to the bottom 
+
     chatContainer.scrollTop = chatContainer.scrollHeight;
- 
-     // specific message div 
+
     const messageDiv = document.getElementById(uniqueId);
-        if (messageDiv) {
-     // messageDiv.innerHTML = "..."
+    loader(messageDiv);
 
-            loader(messageDiv, chatContainer);
-            console.log("Element found, starting loader", messageDiv);
-            console.log("Setting content in messageDiv:", messageDiv, "with value:");
-        } else {
-            console.log("Element not found", uniqueId);
-        }
-
- 
- 
     const response = await fetch('https://travel-plan-generator.onrender.com', {
-         method: 'POST',
-         headers: {
-             'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({ prompt: promptText }) // use the correct variable here
-     });
- 
-     clearInterval(loadInterval);
-     messageDiv.innerHTML = " ";
- 
-   if (response.ok) {
-     const data = await response.json();
-     const parsedData = data.bot.content; // trims any trailing spaces or '\n'
-     console.log('data in client', data, parsedData);
- 
-     typeText(messageDiv, parsedData);
-   } else {
-     const err = await response.text();
- 
-     messageDiv.innerHTML = "Something went wrong";
-     alert(err);
-   }
- } 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: promptText })
+    });
 
-form.addEventListener('submit', handleSubmit)
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = " ";
+
+    if (response.ok) {
+        const data = await response.json();
+        const parsedData = data.bot.content;
+        typeText(messageDiv, parsedData, true);
+    } else {
+        const err = await response.text();
+        messageDiv.innerHTML = "Something went wrong";
+        alert(err);
+    }
+}
+
+form.addEventListener('submit', handleSubmit);
 form.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
-        handleSubmit(e)
+        handleSubmit(e);
     }
-})
+});

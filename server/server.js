@@ -9,13 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize OpenAI API with the API key
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-console.log(process.env.OPENAI_API_KEY);
-
 app.get('/', async (req, res) => {
   res.status(200).send({
     message: 'Hello from Bea!'
@@ -31,7 +24,7 @@ app.post('/', async (req, res) => {
     }
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 3000,
       top_p: 1,
