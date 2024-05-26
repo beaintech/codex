@@ -27,8 +27,7 @@ const typeText = (element, text, isBot = false) => {
         } else {
             clearInterval(interval);
             if (isBot) {
-                // Add a booking link if the response contains a hotel recommendation
-                const hotelName = extractHotelName(text); // Define this function based on your use case
+                const hotelName = extractHotelName(text); 
                 if (hotelName) {
                     const bookingLink = generateAffiliateLink(hotelName);
                     element.innerHTML += `<br><a href="${bookingLink}" target="_blank">Book Now</a>`;
@@ -39,14 +38,12 @@ const typeText = (element, text, isBot = false) => {
 }
 
 const generateAffiliateLink = (hotelName) => {
-    const affiliateId = 'your_affiliate_id'; // Replace with your actual affiliate ID
+    const affiliateId = 'your_affiliate_id';
     const baseUrl = 'https://www.booking.com/hotel/';
     return `${baseUrl}${hotelName}.html?aid=${affiliateId}`;
 }
 
-// Define this function based on your specific use case
 const extractHotelName = (text) => {
-    // Simple regex to match a hotel name - customize this as needed
     const match = text.match(/hotel\s([^\s]+)/i);
     return match ? match[1] : null;
 }
