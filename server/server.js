@@ -10,9 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 // // Initialize OpenAI API with the API key
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 console.log(process.env.OPENAI_API_KEY);
 
