@@ -9,12 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// // Initialize OpenAI API with the API key
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI API with the API key
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
-console.log(process.env.OPENAI_API_KEY);
+// console.log(process.env.OPENAI_API_KEY);
 
 app.get('/', async (req, res) => {
   res.status(200).send({
